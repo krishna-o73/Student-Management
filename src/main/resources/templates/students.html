@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0" />
+  <title>DBS DEMO STUDENT PROJECT</title>
+
+  <link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"
+    integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script type="text/javascript" th:src="@{/webjars/jquery/jquery.min.js}"></script>
+  <script type="text/javascript" th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
+</head>
+
+<body>
+  <div>
+	  <nav class="navbar navbar-expand-md bg-dark navbar-dark">
+	    <a class="navbar-brand" th:href="@{/students}">
+	      DBS
+	    </a>
+	    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#topNavbar">
+	      <span class="navbar-toggler-icon"></span>
+	    </button>
+	    <div class="collapse navbar-collapse" id="topNavbar">
+	      <ul class="navbar-nav">
+	        <li class="nav-item">
+	          <a class="nav-link" th:href="@{/students/all}">Students</a>
+	        </li>
+	        <li class="nav-item">
+	          <a class="nav-link" th:href="@{/students/new}">Add</a>
+	        </li>
+	      </ul>
+	    </div>
+	  </nav>
+  </div>
+
+  <div class="container-fluid" style="max-width: 900px; margin: 0 auto;">
+    <h2 class="text-center">Students Details</h2>
+    <div class="my-3">
+	    <form th:action="@{/students/keyword}" method="get">
+	        <div class="row d-flex justify-content-center align-items-center">
+	            <!-- Search Input with Icon -->
+	            <div class="col-md-6 mt-2">
+	                <div class="input-group">
+	                    <!-- Search Icon -->
+	                    <div class="input-group-prepend">
+	                        <span class="input-group-text"><i class="fa fa-search"></i></span>
+	                    </div>
+	                    <!-- Search Input Field -->
+	                    <input id="keyword" type="search" name="keyword" th:value="${keyword}" required class="form-control"
+	                        placeholder="Enter keyword">
+	                </div>
+	            </div>
+	
+	            <!-- Search and Clear Buttons -->
+	            <div class="col-md-6 mt-2 d-flex">
+	                <button type="submit" class="btn btn-secondary mx-2">Search</button>
+	                <button type="button" id="btnClear" class="btn btn-info">Clear</button>
+	            </div>
+	        </div>
+	    </form>
+	</div>
+
+    <div th:if="${studentList.size() > 0}">
+      <table class="table table-hover table-responsive-xl table-bordered table-striped">
+        <thead class="thead-light">
+          <tr>
+            <th scope="col">Id</th>
+            <th scope="col">Name</th>
+            <th scope="col">City</th>
+            <th scope="col">Marks</th>
+            <th scope="col">Result</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="student : ${studentList}">
+            <th scope="row">[[${student.id}]]</th>
+            <td>[[${student.name}]]</td>
+            <td>[[${student.city}]]</td>
+            <td>[[${student.marks}]]</td>
+            <td>
+              <a th:if="${student.result == true}" class="fa-regular fa-square-check"
+                th:href="@{'/students/' + ${student.id} + '/result/false'}" title="Disable this student"></a>
+              <a th:if="${student.result == false}" class="fa-regular fa-square icon-dark"
+                th:href="@{'/students/' + ${student.id} + '/result/true'}" title="Enable this student"></a>
+            </td>
+            <td>
+              <a th:href="@{'/students/' + ${student.id}}" title="Edit this Student"
+                class="fa-regular fa-pen-to-square icon-dark"></a>
+              &nbsp;
+              <a th:href="@{'/students/delete/' + ${student.id}}" th:studentName="${student.name}" id="btnDelete"
+                title="Delete this Student" class="fa-regular fa-trash-can icon-dark btn-delete"></a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="" th:unless="${studentList.size() > 0}">
+      <span>No Student found!</span>
+    </div>
+  </div>
+
+  <div class="modal fade text-center" id="confirmModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Delete Confirmation</h5>
+          <button type="button" class="close" data-dismiss="modal">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <span id="confirmText"></span>
+        </div>
+
+        <div class="modal-footer">
+          <a type="button" id="yesBtn" class="btn btn-danger">Yes</a>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      $(".btn-delete").on("click", function (e) {
+        e.preventDefault();
+        link = $(this);
+
+        studentName = link.attr("studentName");
+        $("#yesBtn").attr("href", link.attr("href"));
+        $("#confirmText").html("Do you want to delete the Student \<strong\>" + studentName + "\<\/strong\>?");
+        $("#confirmModal").modal();
+      });
+
+      $("#btnClear").on("click", function (e) {
+        e.preventDefault();
+        $("#keyword").text("");
+        window.location = "[[@{/students/all}]]";
+      });
+    });
+  </script>
+
+</body>
+
+</html>
